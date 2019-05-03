@@ -1,11 +1,13 @@
 require 'rails_helper'
 
 RSpec.describe 'Notes APi', type: :request do
-  let!(:notes) { create_list(:note, 10) }
+  let(:user) { create(:user) }
+  let!(:notes) { create_list(:note, 10, user_id: user.id) }
   let(:note_id) { notes.first.id }
+  let(:headers) { valid_headers }
 
-  describe 'GeT/notes' do
-    before { get '/notes' }
+  describe 'GeT /notes' do
+    before { get '/notes', params: {}, headers: headers }
 
     it "return notes" do
       expect(json).not_to be_empty
@@ -18,7 +20,7 @@ RSpec.describe 'Notes APi', type: :request do
   end
 
   describe 'GET /notes/:id' do
-    before { get "/notes/#{note_id}" }
+    before { get "/notes/#{note_id}", params: {}, headers: headers }
 
     context 'when the record exists' do
       it 'returns the todo' do
@@ -45,10 +47,12 @@ RSpec.describe 'Notes APi', type: :request do
   end
 
   describe 'POST /notes' do
-    let(:valid_attributes) { { content: 'Learning Notes', created_by: '1' } }
+    let(:valid_attributes) do
+      { content: 'Learning Notes', user_id: user.id }.to_json
+    end
 
     context 'when the request is valid' do
-      before { post '/notes', params: valid_attributes }
+      before { post '/notes', params: valid_attributes, headers: headers }
 
       it "creates a note" do
         expect(json['content']).to eq('Learning Notes')
@@ -60,36 +64,36 @@ RSpec.describe 'Notes APi', type: :request do
     end
 
     context 'when the request is invalid' do
-      before { post '/notes', params: { content: 'Learning'} }
+      let(:invalid_attributes) { { content: nil }.to_json }
+      before { post '/notes', params: invalid_attributes, headers: headers }
 
-      it "returns status code of 422" do
+      it 'returns status code of 422' do
         expect(response).to have_http_status(422)
       end
 
-      it "returns a validation failure code message" do
-        expect(response.body).to match(/Validation failed: Created by can't be blank/)
+      it 'returns a validation failure code message' do
+        expect(json['message']).to match(/Validation failed: Content can't be blank/)
       end
     end
   end
 
   describe 'PUT /notes/:id' do
-    let(:valid_attributes) { { content: 'Learning Notes' } }
+    let(:valid_attributes) { { content: 'Learning Notes' }.to_json }
 
     context 'when the record exists' do
-      before { put "/notes/#{note_id}", params: valid_attributes }
-
-      it "updates the record" do
+      before { put "/notes/#{note_id}", params: valid_attributes, headers: headers }
+      it 'updates the record' do
         expect(response.body).to be_empty
       end
 
-      it "returns status code 204" do
+      it 'returns status code 204' do
         expect(response).to have_http_status(204)
       end
     end
   end
 
-  describe 'DDELETE /notes/:id' do
-    before { delete "/notes/#{note_id}" }
+  describe 'DELETE /notes/:id' do
+    before { delete "/notes/#{note_id}", params: {}, headers: headers }
 
     it "return status code 204" do
       expect(response).to have_http_status(204)

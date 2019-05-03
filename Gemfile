@@ -10,6 +10,8 @@ gem 'jwt'
 gem 'active_model_serializers'
 gem 'will_paginate', '~> 3.1', '>= 3.1.7'
 gem 'faker'
+gem 'bcrypt', '~> 3.1', '>= 3.1.12'
+gem 'jwt'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.2.3'

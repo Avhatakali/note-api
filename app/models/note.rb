@@ -1,3 +1,4 @@
 class Note < ApplicationRecord
-  validates :content, :created_by, presence: true
+  belongs_to :user
+  validates :content, presence: true
 end
